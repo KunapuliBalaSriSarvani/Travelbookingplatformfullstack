@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./Travel_Frontend/travelsathi-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://backend:9000
+
+  backend:
+    build: ./TravelSathi
+    ports:
+      - "9000:9000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/travelvibe
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Kunapuli_1
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=Kunapuli_1
+      - MYSQL_DATABASE=travelvibe
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  db-data:
