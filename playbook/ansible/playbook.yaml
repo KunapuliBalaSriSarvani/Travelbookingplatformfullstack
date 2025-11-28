@@ -1,0 +1,52 @@
+---
+- name: Deploy TravelSathi Fullstack App Using Ansible
+  hosts: localhost
+  connection: local
+
+  tasks:
+
+    - name: Pull backend image
+      community.docker.docker_image:
+        name: sirishakancherla/travelsathi-backend:latest
+        source: pull
+
+    - name: Pull frontend image
+      community.docker.docker_image:
+        name: sirishakancherla/travelsathi-frontend:latest
+        source: pull
+
+    - name: Remove existing backend container
+      community.docker.docker_container:
+        name: backend
+        state: absent
+        force_kill: yes
+
+    - name: Remove existing frontend container
+      community.docker.docker_container:
+        name: frontend
+        state: absent
+        force_kill: yes
+
+    - name: Run backend container
+      community.docker.docker_container:
+        name: backend
+        image: sirishakancherla/travelsathi-backend:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "9000:9000"
+        env:
+          SPRING_DATASOURCE_URL: "jdbc:mysql://host.docker.internal:3306/travelvibe"
+          SPRING_DATASOURCE_USERNAME: "root"
+          SPRING_DATASOURCE_PASSWORD: "sirisha"
+
+    - name: Run frontend container
+      community.docker.docker_container:
+        name: frontend
+        image: sirishakancherla/travelsathi-frontend:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "5173:80"
+        env:
+          REACT_APP_API_URL: "http://localhost:9000"
